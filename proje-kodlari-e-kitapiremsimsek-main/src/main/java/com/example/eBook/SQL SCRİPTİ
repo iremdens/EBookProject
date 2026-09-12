@@ -1,0 +1,77 @@
+-- 1. Kullanıcılar (user ve admin)
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    adsoyad VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    sifre VARCHAR(100) NOT NULL,
+    adres TEXT,
+    rol VARCHAR(20) CHECK (rol IN ('user', 'admin')) DEFAULT 'user'
+);
+
+-- 2. Kategoriler
+CREATE TABLE kategori (
+    kategori_id SERIAL PRIMARY KEY,
+    tur VARCHAR(50)
+);
+
+-- 3. Kitaplar
+CREATE TABLE kitap (
+    kitap_id SERIAL PRIMARY KEY,
+    baslik VARCHAR(150) NOT NULL,
+    yazar VARCHAR(100) NOT NULL,
+    fiyat DECIMAL(10,2) NOT NULL,
+    kategori_id INTEGER REFERENCES kategori(kategori_id),
+    ekleyen_id INTEGER REFERENCES users(user_id),
+    onayli BOOLEAN DEFAULT FALSE,
+    aciklama TEXT
+);
+
+-- 4. Değerlendirmeler
+CREATE TABLE degerlendirme (
+    degerlendirme_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(user_id),
+    kitap_id INTEGER REFERENCES kitap(kitap_id),
+    puan INTEGER CHECK (puan BETWEEN 1 AND 5),
+    yorum TEXT,
+    tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. Sepet (kullanıcı bazlı geçici ürün listesi)
+CREATE TABLE sepet (
+    sepet_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(user_id),
+    kitap_id INTEGER REFERENCES kitap(kitap_id),
+    adet INTEGER DEFAULT 1
+);
+
+-- 6. Siparişler
+CREATE TABLE siparis (
+    siparis_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(user_id),
+    tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    durum VARCHAR(20) DEFAULT 'hazırlanıyor',
+    odemeyontemi VARCHAR(50)
+);
+
+-- 7. Sipariş – Kitap ilişkisi (bir siparişte birden fazla kitap olabilir)
+CREATE TABLE siparis_kitap (
+    siparis_kitap_id SERIAL PRIMARY KEY,
+    siparis_id INTEGER REFERENCES siparis(siparis_id),
+    kitap_id INTEGER REFERENCES kitap(kitap_id),
+    adet INTEGER DEFAULT 1,
+    birim_fiyat DECIMAL(10,2)
+);
+
+-- 8. Fatura (otomatik oluşur, siparişe bağlı)
+CREATE TABLE fatura (
+    fatura_id SERIAL PRIMARY KEY,
+    siparis_id INTEGER REFERENCES siparis(siparis_id),
+    tutar DECIMAL(10,2),
+    tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+
+ALTER TABLE kitap ADD COLUMN gorsel_url VARCHAR(500);
+
